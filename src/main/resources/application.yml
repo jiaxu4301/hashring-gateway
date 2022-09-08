@@ -1,0 +1,42 @@
+spring:
+  redis:
+    host: 1.117.158.80
+    port: 6379
+    password: jiaxu123123
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      discovery: #是否与服务发现组件进行结合，通过 serviceId。默认为false，设为true便开启通过服务中心的自动根据 serviceId 创建路由的功能。
+        locator:
+          enabled: true     #路由访问方式：http://Gateway_HOST:Gateway_PORT/serviceId/**，其中微服务应用名默认大写访问。
+          lowerCaseServiceId: true   #是将请求路径上的服务名配置为小写（因为服务注册的时候，向注册中心注册时将服务名转成大写的了），比如以/service-hi/*的请求路径被路由转发到服务名为service-hi的服务上。
+      routes:
+        - id: ws-client-http
+          uri: lb://WS-CLIENT
+          predicates:
+            - Path=/api/**
+
+        - id: ws-client-websocket
+          uri: lb:ws://WS-CLIENT
+          predicates:
+            - Path=/ws/**
+
+server:
+  port: 8888
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+
+    # 每10秒向注册中心发送心跳,超过10秒没发送心跳,Eureka认为服务宕机了
+    # 服务续约(renew)的间隔
+    lease-renewal-interval-in-seconds: 60
+    # 服务失效时间
+    lease-expiration-duration-in-seconds: 60
+  client:
+    # 客户端从Eureka注册中心同步节点信息的时间间隔
+    registry-fetch-interval-seconds: 5
+    register-with-eureka: false
